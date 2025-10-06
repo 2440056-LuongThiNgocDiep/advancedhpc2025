@@ -1,0 +1,159 @@
+\documentclass[hidelinks,12pt,a4paper]{article}
+
+% ====== Packages ======
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usetikzlibrary{automata, arrows, positioning}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{left=1.2in,top=1in,bottom=1in,right=1in}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{subcaption}
+
+% ====== Color and Title Formatting ======
+\definecolor{blue}{RGB}{31,56,100}
+
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\Large\bfseries}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries}
+  {\thesubsubsection}{1em}{}
+
+% ====== Document ======
+\begin{document}
+\pagenumbering{gobble}
+
+% ====== Title Page ======
+\begin{titlepage}
+    \begin{tikzpicture}[remember picture,overlay,inner sep=0,outer sep=0]
+        \draw[black!70!black,line width=1.5pt]
+            ([xshift=-0.65in,yshift=-1cm]current page.north east) --
+            ([xshift=0.65in,yshift=-1cm]current page.north west) --
+            ([xshift=0.65in,yshift=1cm]current page.south west) --
+            ([xshift=-0.65in,yshift=1cm]current page.south east) -- cycle;
+    \end{tikzpicture}
+
+    \begin{center}
+        {\large\uppercase{University of Science and Technology of Hanoi}} \\[1.5cm]
+        \includegraphics[width=0.6\linewidth]{images/usth.png} \\[1cm]
+        {\huge \bfseries \uppercase{Labwork Report}} \\[1cm]
+        {\large \bfseries 2440056 -- Luong Thi Ngoc Diep} \\[0.5cm]
+        {\huge \bfseries {Advanced Programming for HPC}} \\[1cm]
+        \rule{\linewidth}{0.3mm} \\[0.4cm]
+        {\Huge \bfseries \color{blue} Labwork 3: Hello, CUDA!} \\
+        \rule{\linewidth}{0.3mm} \\[0.7cm]
+        \large Academic Year: 2024--2026
+    \end{center}
+\end{titlepage}
+
+\clearpage
+\pagenumbering{arabic}
+
+% ====== Section 1 ======
+\section{Introduction}
+In this labwork, I implemented an image RGB-to-grayscale converter using both CPU and GPU with Numba CUDA.  
+The goal was to compare execution time and evaluate GPU performance when using different block sizes.
+
+% ====== Section 2 ======
+\section{Implementation and Results}
+
+\subsection{CPU Implementation}
+The CPU version converts each pixel using the following formula:
+\[
+gray = \frac{R + G + B}{3}
+\]
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=blue!40!black, title=CPU Python Code]
+\begin{lstlisting}[language=Python]
+for r, g, b in zip(R, G, B):
+    gray_pixel = (r + g + b) / 3
+    gray_img.append(gray_pixel)
+\end{lstlisting}
+\end{tcolorbox}
+
+Runtime: \textbf{0.893 s} for a 604×900 image (543,600 pixels).  
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{images/Original Image.png}
+    \caption{Original Image}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{images/gray_cpu.png}
+    \caption{Grayscale (CPU)}
+  \end{subfigure}
+  \caption{CPU grayscale result}
+\end{figure}
+
+\subsection{GPU Implementation}
+The GPU version parallelizes the same formula using CUDA.
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=blue!40!black, title=CUDA Kernel Code]
+\begin{lstlisting}[language=Python]
+@cuda.jit
+def grayscale(src, dst):
+    i = cuda.threadIdx.x + cuda.blockIdx.x * cuda.blockDim.x
+    if i < src.shape[0]:
+        g = np.uint8((src[i,0] + src[i,1] + src[i,2]) / 3)
+        dst[i,0] = dst[i,1] = dst[i,2] = g
+\end{lstlisting}
+\end{tcolorbox}
+
+Runtime (block size 32–256): \textbf{≈0.00033 s}.  
+Speedup: \textbf{~2700× faster than CPU.}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{images/gray_gpu.png}
+    \caption{Grayscale (GPU)}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{images/runtime_plot.png}
+    \caption{Runtime vs Block Size}
+  \end{subfigure}
+  \caption{GPU results and performance graph}
+\end{figure}
+
+\subsection{Measured Runtime}
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Block Size} & \textbf{Runtime (s)} \\ \hline
+4 & 0.00082 \\ 
+8 & 0.00048 \\ 
+16 & 0.00038 \\ 
+32 & 0.00033 \\ 
+64 & 0.00033 \\ 
+128 & 0.00034 \\ 
+256 & 0.00035 \\ 
+512 & 0.00035 \\ 
+1024 & 0.00036 \\ \hline
+\end{tabular}
+\end{center}
+
+% ====== Section 3 ======
+\section{Discussion and Conclusion}
+GPU execution shows massive speedup compared to CPU due to parallel computation.  
+Performance improved as block size increased up to 64–128 threads, then stabilized.  
+Both CPU and GPU outputs were visually identical, confirming correctness.  
+
+
+\end{document}

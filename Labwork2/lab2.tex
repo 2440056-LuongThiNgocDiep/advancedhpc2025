@@ -1,0 +1,102 @@
+\documentclass[hidelinks,12pt,a4paper]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usetikzlibrary{automata, arrows, positioning}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{geometry}
+\geometry{left=1.2in,top=1in,bottom=1in,right=1in}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{float}
+\definecolor{blue}{RGB}{31,56,100}
+
+\titleformat{\section}
+  {\normalfont\LARGE\bfseries}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\Large\bfseries}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\large\bfseries}
+  {\thesubsubsection}{1em}{}
+
+\begin{document}
+\pagenumbering{gobble}
+
+\begin{titlepage}
+    \begin{tikzpicture}[remember picture,overlay,inner sep=0,outer sep=0]
+        \draw[black!70!black,line width=1.5pt]
+            ([xshift=-0.65in,yshift=-1cm]current page.north east) --
+            ([xshift=0.65in,yshift=-1cm]current page.north west) --
+            ([xshift=0.65in,yshift=1cm]current page.south west) --
+            ([xshift=-0.65in,yshift=1cm]current page.south east) -- cycle;
+    \end{tikzpicture}
+
+    \begin{center}
+        {\large\uppercase{University of Science and Technology of Hanoi}} \\[1.5cm]
+        \includegraphics[width=0.7\linewidth]{images/usth.png} \\[1cm]
+        {\huge \bfseries \uppercase{Labwork's Report}} \\[1cm]
+        {\large \bfseries 2440056 - Luong Thi Ngoc} \\[0.5cm]
+        {\huge \bfseries {Advanced Programming for HPC}} \\[1cm]
+        \rule{\linewidth}{0.3mm} \\[0.4cm]
+        {\Huge \bfseries \color{blue} Labwork 2: Get to know your GPU} \\
+        \rule{\linewidth}{0.3mm} \\[0.7cm]
+        \large Academic Year: 2024--2026
+    \end{center}
+\end{titlepage}
+
+\clearpage
+\pagenumbering{arabic}
+
+\section{Introduction}
+In this labwork, I explored the GPU device available in Google Colab using the \texttt{numba.cuda} library. 
+
+\subsection{Device name}
+The GPU used in this lab is:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{fig/ID and Name of the GPUs.png}
+    \caption{ID and Name of the GPUs}
+    \label{fig:placeholder}
+\end{figure}
+\subsection{Core info: multiprocessor count, core count}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{fig/multiprocessor count and core count.png}
+    \caption{Multiprocessor count, core count}
+    \label{fig:placeholder}
+\end{figure}
+\begin{itemize}
+    \item Multiprocessor count (SMs): 40
+    \item CUDA cores per SM: 64
+    \item {Total CUDA cores:} 2560
+\end{itemize}
+
+To determine the total number of CUDA cores, I used the mapping between compute capability and cores per multiprocessor, as referenced in StackOverflow \cite{stackoverflow-cuda-cores}.
+
+\subsection{Memory info}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{fig/Memory info.png}
+    \caption{Memory info}
+    \label{fig:placeholder}
+\end{figure}
+
+\section{Conclusion}
+The Tesla T4 GPU available in Colab provides 2560 CUDA cores and 14.74~GB of global memory.
+
+
+\begin{thebibliography}{9}
+\bibitem{stackoverflow-cuda-cores} 
+StackOverflow, \emph{How can I get the number of CUDA cores in my GPU using Python and Numba?}  
+\url{https://stackoverflow.com/questions/63823395/how-can-i-get-the-number-of-cuda-cores-in-my-gpu-using-python-and-numba}
+\end{thebibliography}
+
+\end{document}
